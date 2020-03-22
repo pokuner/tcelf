@@ -1,0 +1,40 @@
+(gdb) info vtbl p
+vtable for 'IPlayer' @ 0x7ffff7fccd78 (subobject @ 0x417540):
+[0]: 0x7ffff7fca210 <CPlayer::~CPlayer()>
+[1]: 0x7ffff7fca23e <CPlayer::~CPlayer()>
+[2]: 0x7ffff7fca26a <CPlayer::GetName() const>
+(gdb) p p
+$1 = (IPlayer *) 0x417540
+(gdb) p *p
+$2 = {_vptr.IPlayer = 0x7ffff7fccd78 <vtable for CPlayer+16>}
+(gdb) x/8x *p
+Value can't be converted to integer.
+(gdb) x/8x 0xufff7fccd78
+Invalid number "0xufff7fccd78".
+(gdb) x/8x 0x7ffff7fccd78
+0x7ffff7fccd78 <_ZTV7CPlayer+16>:	0xf7fca210	0x00007fff	0xf7fca23e	0x00007fff
+0x7ffff7fccd88 <_ZTV7CPlayer+32>:	0xf7fca26a	0x00007fff	0x00000000	0x00000000
+
+
+[kun@localhost player]$ sudo cat /proc/8431/maps | grep player
+00400000-00401000 r--p 00000000 fd:00 546840                             /home/kun/Develop/tcelf/player/app
+00401000-00402000 r-xp 00001000 fd:00 546840                             /home/kun/Develop/tcelf/player/app
+00402000-00403000 r--p 00002000 fd:00 546840                             /home/kun/Develop/tcelf/player/app
+00403000-00404000 r--p 00002000 fd:00 546840                             /home/kun/Develop/tcelf/player/app
+00404000-00405000 rw-p 00003000 fd:00 546840                             /home/kun/Develop/tcelf/player/app
+7ffff7fc9000-7ffff7fca000 r--p 00000000 fd:00 546860                     /home/kun/Develop/tcelf/player/libplayer.so
+7ffff7fca000-7ffff7fcb000 r-xp 00001000 fd:00 546860                     /home/kun/Develop/tcelf/player/libplayer.so
+7ffff7fcb000-7ffff7fcc000 r--p 00002000 fd:00 546860                     /home/kun/Develop/tcelf/player/libplayer.so
+7ffff7fcc000-7ffff7fcd000 r--p 00002000 fd:00 546860                     /home/kun/Develop/tcelf/player/libplayer.so
+7ffff7fcd000-7ffff7fce000 rw-p 00003000 fd:00 546860                     /home/kun/Develop/tcelf/player/libplayer.so
+
+
+hex(0x7ffff7fccd78-0x7ffff7fcc000)
+'0xd78'
+
+hex(0x7ffff7fccd78-0x7ffff7fc9000)
+'0x3d78'
+
+
+runtime base
+0x7ffff7fc9000
