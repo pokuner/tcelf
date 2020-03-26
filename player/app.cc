@@ -29,6 +29,8 @@ main(int argc, char **argv)
     IPlayer* p = create_player();
     printf("hello %s\n", p->GetName());
 
+    getchar();
+
     dlclose(handle);
     exit(EXIT_SUCCESS);
 }
