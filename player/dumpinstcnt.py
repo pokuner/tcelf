@@ -89,7 +89,10 @@ class MyELF(object):
             if addr_value != vptr:
                 continue
 
-            classname = cxxfilt.demangle(symbol.name).rpartition(' ')[2]
+            try:
+                classname = cxxfilt.demangle(symbol.name).rpartition(' ')[2]
+            except cxxfilt.InvalidName:
+                classname = symbol.name
 
             # Assert begin
             sec_rela_dyn = self.elffile.get_section_by_name(".rela.dyn")

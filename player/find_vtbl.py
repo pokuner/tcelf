@@ -86,7 +86,7 @@ class ProcessMemoryMap(object):
                 symbol_name = symbol.name
                 try:
                     symbol_name = cxxfilt.demangle(symbol_name)
-                except InvalidName:
+                except cxxfilt.InvalidName:
                     continue
 
                 if symbol_name == vtable_name:
