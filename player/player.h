@@ -13,5 +13,6 @@ public:
     virtual const char *GetName() const;
 
 private:
+    __attribute__((section("class.counter"))) static int mycount_;
     char name_[12];
 };
