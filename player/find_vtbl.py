@@ -96,7 +96,7 @@ if __name__ == '__main__':
     process_maps = ProcessMemoryMap("app")
 
     image_load_base = process_maps.get_image_load_base("player/libplayer.so")
-    vtable_offset = process_maps.get_vtable_offset("player/libplayer.so", "CPlayer")
+    vtable_offset = process_maps.get_vtable_offset("player/libplayer.so", "CLotteryPlayer")
     vtable_runtime_addr = (image_load_base + vtable_offset + 16)
 
     print("vtable_runtime_addr of CPlayer is", hex(vtable_runtime_addr))

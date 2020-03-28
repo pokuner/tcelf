@@ -1,2 +1,5 @@
 libmy.so
 main
+player/app
+player/libplayer.so
+player/meminfo
