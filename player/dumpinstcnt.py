@@ -11,7 +11,7 @@ import argparse
 SCRIPT_DESCRIPTION = "Dump cxx class instance count"
 
 def dump_process_memory(pid, memfile, mem_begin, mem_end):
-    """Dump process .class.counter section memory
+    """Dump process memory with gdb
     """
     gdb_dump_cmd = 'gdb --batch --pid {} -ex "dump memory {} {} {}"'.format(
         pid, memfile, mem_begin, mem_end)
