@@ -48,7 +48,7 @@ def get_object_load_base(pid, elf_file):
         elf_file: object name loaded by process, like "/foo/bar.so" or "bar.so"
     """
     # /foo/bar.so -> bar.so
-    obj_name = elf_file.split('/')[-1]
+    obj_name = elf_file.rpartition('/')[2]
 
     maps_file = "/proc/{}/maps".format(pid)
     with open(maps_file) as f:
