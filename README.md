@@ -5,5 +5,9 @@ To run this example
 - ./build.sh
 - ./app
 
+Python dependence
+- pyelftools
+- cxxfilt
+
 Then in a new shell
 - ./dumpinstcnt.py -p $(pidof app) -e libplayer.so
