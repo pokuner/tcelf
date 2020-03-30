@@ -17,8 +17,8 @@ def dump_process_memory(pid, memfile, mem_begin, mem_end):
         pid, memfile, mem_begin, mem_end)
     try:
         out_print = check_output(gdb_dump_cmd, stderr=STDOUT, shell=True)
-        out_print = out_print.decode(encoding='utf-8')
-        print(out_print, end='', file=sys.stdout)
+        # out_print = out_print.decode(encoding='utf-8')
+        # print(out_print, end='', file=sys.stdout)
     except CalledProcessError as ex:
         out_print = ex.output.decode(encoding='utf-8')
         print(out_print, end='', file=sys.stderr)
@@ -109,6 +109,41 @@ class MyELF(object):
 
         return classname
 
+
+class Column2Table(object):
+    """Print table like
+        Class           Count
+        ----------------------
+        CPlayer         111111
+        CLotteryPlayer  2222  
+    """
+    def __init__(self, col0name, col1name, table, keycol):
+        maxlen_col0 = len(col0name)
+        maxlen_col1 = len(col1name)
+        for col0, col1 in table:
+            maxlen_col0 = max(maxlen_col0, len(str(col0)))
+            maxlen_col1 = max(maxlen_col1, len(str(col1)))
+        table.sort(key = lambda x : x[keycol], reverse = True)
+        self.table = table
+        self.maxlen_col0 = maxlen_col0
+        self.maxlen_col1 = maxlen_col1
+        self.col0name = col0name
+        self.col1name = col1name
+
+    def _print_line(self, col0, col1):
+        line = "{}{}{}{}".format(col0, (self.maxlen_col0-len(str(col0))+2)*' ',
+                col1, (self.maxlen_col1-len(str(col1)))*' ')
+        print(line)
+    
+    def _print_header(self):
+        self._print_line(self.col0name, self.col1name)
+        print((self.maxlen_col0+2+self.maxlen_col1)*'-')
+
+    def print_table(self):
+        self._print_header()
+        for col0, col1 in self.table:
+            self._print_line(col0, col1)
+
 def main():
     argparser = argparse.ArgumentParser(
         usage="%(prog)s <-p pid> <-e elf> [-m memfile]",
@@ -121,7 +156,7 @@ def main():
     argparser.add_argument("-m", dest="memfile", default="/tmp/dumpinstcnt.mem",)
 
     # for debug
-    # args = argparser.parse_args(["-p", "8779",
+    # args = argparser.parse_args(["-p", "3950",
     #     "-e", "/home/kun/Develop/tcelf/player/libplayer.so"])
 
     args = argparser.parse_args()
@@ -129,19 +164,20 @@ def main():
     with open(args.elf, 'rb') as elf_file:
         myelf = MyELF(elf_file)
         sec_addr, sec_size = myelf.get_section_addr_size(".class.counter")
-        # print("elf .class.counter addr", hex(sec_addr))
-        # print("elf .class.counter size", hex(sec_size))
-
         load_base = get_object_load_base(args.pid, args.elf)
-        # print("elf load base", hex(load_base))
 
         mem_begin = hex(load_base + sec_addr)
         mem_end = hex(load_base + sec_addr + sec_size)
         dump_process_memory(args.pid, args.memfile, mem_begin, mem_end)
         all_unpacked = load_dump_memory(args.memfile)
+        
+        classname_count = []
         for cnt, vptr in all_unpacked:
             classname = myelf.get_classname_by_vptr(vptr-load_base-16)
-            print(classname, cnt)
+            classname_count.append((classname, cnt))
+
+        tbl = Column2Table("Class", "Count", classname_count, 1)
+        tbl.print_table()
 
 if __name__ == "__main__":
     main()
