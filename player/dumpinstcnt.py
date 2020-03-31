@@ -10,6 +10,7 @@ import argparse
 
 SCRIPT_DESCRIPTION = "Dump cxx class instance count"
 
+
 def dump_process_memory(pid, memfile, mem_begin, mem_end):
     """Dump process memory with gdb
     """
@@ -23,6 +24,7 @@ def dump_process_memory(pid, memfile, mem_begin, mem_end):
         out_print = ex.output.decode(encoding='utf-8')
         print(out_print, end='', file=sys.stderr)
         sys.exit(ex.returncode)
+
 
 def load_dump_memory(memfile):
     """Load and parse dump memory
@@ -41,6 +43,7 @@ def load_dump_memory(memfile):
             pass
 
     return all_unpacked
+
 
 def get_object_load_base(pid, elf_file):
     """return executable or shared library object base address in a process
@@ -64,8 +67,10 @@ def get_object_load_base(pid, elf_file):
             address_range = info[0].split('-')
             return int(address_range[0], 16)
 
+
 class MyELF(object):
     """ELF file wrapper"""
+
     def __init__(self, elf_file):
         self.elffile = ELFFile(elf_file)
 
@@ -109,40 +114,30 @@ class MyELF(object):
 
         return classname
 
-
-class Column2Table(object):
-    """Print table like
+def print_table(table):
+    """Print table like, first record is column name.
         Class           Count
         ----------------------
         CPlayer         111111
         CLotteryPlayer  2222  
     """
-    def __init__(self, col0name, col1name, table, keycol):
-        maxlen_col0 = len(col0name)
-        maxlen_col1 = len(col1name)
-        for col0, col1 in table:
-            maxlen_col0 = max(maxlen_col0, len(str(col0)))
-            maxlen_col1 = max(maxlen_col1, len(str(col1)))
-        table.sort(key = lambda x : x[keycol], reverse = True)
-        self.table = table
-        self.maxlen_col0 = maxlen_col0
-        self.maxlen_col1 = maxlen_col1
-        self.col0name = col0name
-        self.col1name = col1name
+    if not table:
+        return
 
-    def _print_line(self, col0, col1):
-        line = "{}{}{}{}".format(col0, (self.maxlen_col0-len(str(col0))+2)*' ',
-                col1, (self.maxlen_col1-len(str(col1)))*' ')
-        print(line)
-    
-    def _print_header(self):
-        self._print_line(self.col0name, self.col1name)
-        print((self.maxlen_col0+2+self.maxlen_col1)*'-')
+    cols_width = [0] * len(table[0])
+    for row in table:
+        for i, word in enumerate(row):
+            cols_width[i] = max(cols_width[i], len(str(word)) + 2)
 
-    def print_table(self):
-        self._print_header()
-        for col0, col1 in self.table:
-            self._print_line(col0, col1)
+    # print header
+    print("".join(str(word).ljust(cols_width[i])
+                  for i, word in enumerate(table[0])))
+    print(sum(cols_width) * '-')
+
+    # print row
+    for row in table[1:]:
+        print("".join(str(word).ljust(cols_width[i])
+                      for i, word in enumerate(row)))
 
 def main():
     argparser = argparse.ArgumentParser(
@@ -153,7 +148,8 @@ def main():
 
     argparser.add_argument("-p", dest="pid", required=True)
     argparser.add_argument("-e", dest="elf", required=True)
-    argparser.add_argument("-m", dest="memfile", default="/tmp/dumpinstcnt.mem",)
+    argparser.add_argument("-m", dest="memfile",
+                           default="/tmp/dumpinstcnt.mem",)
 
     # for debug
     # args = argparser.parse_args(["-p", "3950",
@@ -170,14 +166,14 @@ def main():
         mem_end = hex(load_base + sec_addr + sec_size)
         dump_process_memory(args.pid, args.memfile, mem_begin, mem_end)
         all_unpacked = load_dump_memory(args.memfile)
-        
-        classname_count = []
+
+        # table header
+        classname_count = [("Class", "Count")]
         for cnt, vptr in all_unpacked:
             classname = myelf.get_classname_by_vptr(vptr-load_base-16)
             classname_count.append((classname, cnt))
 
-        tbl = Column2Table("Class", "Count", classname_count, 1)
-        tbl.print_table()
+        print_table(classname_count)
 
 if __name__ == "__main__":
     main()
